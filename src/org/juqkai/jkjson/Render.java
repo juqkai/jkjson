@@ -6,6 +6,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.juqkai.lang.Mirror;
 
@@ -54,32 +55,49 @@ public class Render {
 			return;
 		}
 		if(obj.getClass().isArray()){
-			array2json(obj);
+			array2Json(obj);
 			return;
 		}
 		if(obj instanceof Collection<?>){
-			array2json(((Collection<?>)obj).toArray());
+			array2Json(((Collection<?>)obj).toArray());
 			return;
 		}
 		if(obj instanceof Map<?,?>){
-			
+			map2Json((Map<?,?>)obj);
 			return;
 		}
 		pojo2Json(obj);
 	}
 
-	
+	/**
+	 * MAP转json
+	 * @param obj
+	 * @author juqkai(juqkai@gmail.com) 2010-10-25
+	 * @throws IOException 
+	 */
+	private void map2Json(Map<?,?> obj) throws IOException {
+		before();
+		boolean temp = false;
+		for(Entry<?, ?> entry : obj.entrySet()){
+			if(temp){
+				writer.append(',');
+			}
+			writeItem(entry.getKey().toString(), entry.getValue());
+			temp = true;
+		}
+		after();
+	}
+
 	/**
 	 * 数组转json
 	 * @param obj
 	 * @throws IOException
 	 * @author juqkai(juqkai@gmail.com) 2010-10-25
 	 */
-	private void array2json(Object obj) throws IOException {
+	private void array2Json(Object obj) throws IOException {
 		writer.append('[');
-		int len = Array.getLength(obj);
 		boolean temp = false;
-		for(int i = 0; i < len; i ++){
+		for(int i = 0; i < Array.getLength(obj); i ++){
 			if(temp){
 				writer.append(',');
 			}
@@ -89,16 +107,33 @@ public class Render {
 		writer.append(']');
 	}
 
+	/**
+	 * 转换一个键值对
+	 * @param name
+	 * @param value
+	 * @throws IOException
+	 * @author juqkai(juqkai@gmail.com) 2010-10-25
+	 */
 	private void writeItem(String name, Object value) throws IOException {
 		writer.write(name);
 		writer.append(":");
 		rend(value);
 	}
 
+	/**
+	 * 项的结尾
+	 * @throws IOException
+	 * @author juqkai(juqkai@gmail.com) 2010-10-25
+	 */
 	private void after() throws IOException {
 		writer.append('}');
 	}
 
+	/**
+	 * 项的开头
+	 * @throws IOException
+	 * @author juqkai(juqkai@gmail.com) 2010-10-25
+	 */
 	private void before() throws IOException {
 		writer.append('{');
 	}
