@@ -30,9 +30,9 @@ public class Json {
 	 * @author juqkai(juqkai@gmail.com) 2010-10-25
 	 */
 	public static void toJson(Writer writer, Object obj) {
-		String str = "{\"id\":1,\"name\":\"juqkai\"}";
+		Render rend = new Render(writer);
 		try {
-			writer.write(str);
+			rend.rend(obj);
 		} catch (IOException e) {
 			throw new JsonException("json 转换失败");
 		}
