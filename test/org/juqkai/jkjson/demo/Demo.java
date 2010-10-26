@@ -1,5 +1,8 @@
 package org.juqkai.jkjson.demo;
 
+import java.awt.Image;
+
+import org.juqkai.jkjson.annotation.Ignore;
 import org.juqkai.util.string.Strings;
 
 public class Demo{
@@ -7,6 +10,9 @@ public class Demo{
 	int id;
 	Demo2 demo2;
 	int[] ip ;
+	
+	@Ignore
+	Image img;
 	public Demo(int id, String name){
 		this.id = id;
 		this.name = name;
@@ -42,5 +48,11 @@ public class Demo{
 	}
 	public void setIp(int[] ip) {
 		this.ip = ip;
+	}
+	public Image getImg() {
+		return img;
+	}
+	public void setImg(Image img) {
+		this.img = img;
 	}
 }

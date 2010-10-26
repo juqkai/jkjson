@@ -4,10 +4,13 @@ import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.juqkai.jkjson.annotation.Ignore;
+import org.juqkai.jkjson.annotation.ToJson;
 import org.juqkai.lang.Mirror;
 
 /**
@@ -70,43 +73,117 @@ public class Render {
 	}
 
 	/**
+	 * 项的结尾
+	 * @throws IOException
+	 * @author juqkai(juqkai@gmail.com) 2010-10-25
+	 */
+	private void after() throws IOException {
+		writer.append('}');
+	}
+
+	/**
+	 * 项的开头	
+	 * @throws IOException
+	 * @author juqkai(juqkai@gmail.com) 2010-10-25
+	 */
+	private void before() throws IOException {
+		writer.append('{');
+	}
+	/**
+	 * 项与项之间的分隔符
+	 * @return
+	 * @author juqkai(juqkai@gmail.com) 2010-10-26
+	 */
+	private String itemSeparator(){
+		return ",";
+	}
+	
+	/**
 	 * MAP转json
-	 * @param obj
+	 * @param map
 	 * @author juqkai(juqkai@gmail.com) 2010-10-25
 	 * @throws IOException 
 	 */
-	private void map2Json(Map<?,?> obj) throws IOException {
+	private void map2Json(Map<?,?> map) throws IOException {
 		before();
-		boolean temp = false;
-		for(Entry<?, ?> entry : obj.entrySet()){
-			if(temp){
-				writer.append(',');
-			}
+		String temp = "";
+		for(Entry<?, ?> entry : map.entrySet()){
+			writer.append(temp);
 			writeItem(entry.getKey().toString(), entry.getValue());
-			temp = true;
+			temp = itemSeparator();
 		}
 		after();
 	}
 
 	/**
 	 * 数组转json
-	 * @param obj
+	 * @param array
 	 * @throws IOException
 	 * @author juqkai(juqkai@gmail.com) 2010-10-25
 	 */
-	private void array2Json(Object obj) throws IOException {
+	private void array2Json(Object array) throws IOException {
 		writer.append('[');
-		boolean temp = false;
-		for(int i = 0; i < Array.getLength(obj); i ++){
-			if(temp){
-				writer.append(',');
-			}
-			rend(Array.get(obj, i));
-			temp = true;
+		String temp = "";
+		for(int i = 0; i < Array.getLength(array); i ++){
+			writer.append(temp);
+			rend(Array.get(array, i));
+			temp = itemSeparator();
 		}
 		writer.append(']');
 	}
+	/**
+	 * 一般对象转json
+	 * @param obj
+	 * @author juqkai(juqkai@gmail.com) 2010-10-25
+	 * @throws IOException 
+	 */
+	private void pojo2Json(Object obj) throws IOException {
+		if(run2JsonMethod(obj)){
+			return;
+		}
+		
+		before();
+		Mirror<?> me = Mirror.me(obj.getClass());
+		String temp = "" ;
+		for(Field fi : me.getFields()){
+			try{
+				if(fi.getAnnotation(Ignore.class) != null){
+					continue;
+				}
+				writer.append(temp);
+				Object value = me.getValue(obj, fi.getName());
+				
+				writeItem(fi.getName(), value);
+				temp = itemSeparator();
+			} catch (Exception e){
+				//如果抛出异常,说明不能获取该属性的值,那么直接忽略该属性
+			}
+		}
+		after();
+	}
+	/**
+	 * 执行对象身上自带的toJson方法
+	 * @param obj
+	 * @return 执行成功返回true
+	 * @author juqkai(juqkai@gmail.com) 2010-10-26
+	 */
+	private boolean run2JsonMethod(Object obj){
+		Mirror<?> me = Mirror.me(obj.getClass());
+		for(Method meth : me.getMethods()){
+			if(meth.getAnnotation(ToJson.class) != null){
+				try {
+					meth.invoke(obj);
+					return true;
+				} catch (Exception e) {
+					return false;
+				}
+			}
+		}
+		return false;
+	}
+	
 
+	
 	/**
 	 * 转换一个键值对
 	 * @param name
@@ -119,48 +196,7 @@ public class Render {
 		writer.append(":");
 		rend(value);
 	}
-
-	/**
-	 * 项的结尾
-	 * @throws IOException
-	 * @author juqkai(juqkai@gmail.com) 2010-10-25
-	 */
-	private void after() throws IOException {
-		writer.append('}');
-	}
-
-	/**
-	 * 项的开头
-	 * @throws IOException
-	 * @author juqkai(juqkai@gmail.com) 2010-10-25
-	 */
-	private void before() throws IOException {
-		writer.append('{');
-	}
-	/**
-	 * 一般对象转json
-	 * @param obj
-	 * @author juqkai(juqkai@gmail.com) 2010-10-25
-	 * @throws IOException 
-	 */
-	private void pojo2Json(Object obj) throws IOException {
-		Mirror<?> me = Mirror.me(obj.getClass());
-		Field[] fs = me.getFields();
-		boolean temp = false;
-		
-		before();
-		for(Field fi : fs){
-			String name = fi.getName();
-			Object value = me.getValue(obj, fi.getName());
-			
-			if(temp){
-				writer.append(",");
-			}
-			writeItem(name, value);
-			temp = true;
-		}
-		after();
-	}
+	
 	
 	/**
 	 * 字符串转成json对象
@@ -197,5 +233,4 @@ public class Render {
 		}
 		writer.append('\"');
 	}
-
 }
