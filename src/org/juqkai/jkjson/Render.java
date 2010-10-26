@@ -14,7 +14,7 @@ import org.juqkai.jkjson.annotation.ToJson;
 import org.juqkai.lang.Mirror;
 
 /**
- * 对象分裂者
+ * 对象to Json 转换器
  * @author juqkai(juqkai@gmail.com) 2010-10-25
  */
 public class Render {
@@ -172,7 +172,7 @@ public class Render {
 		for(Method meth : me.getMethods()){
 			if(meth.getAnnotation(ToJson.class) != null){
 				try {
-					meth.invoke(obj);
+					writer.write(meth.invoke(obj).toString());
 					return true;
 				} catch (Exception e) {
 					return false;

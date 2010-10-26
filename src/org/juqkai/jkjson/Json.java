@@ -1,6 +1,7 @@
 package org.juqkai.jkjson;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
 
 import org.juqkai.jkjson.exception.JsonException;
@@ -36,5 +37,14 @@ public class Json {
 		} catch (IOException e) {
 			throw new JsonException("json 转换失败");
 		}
+	}
+	
+	/**
+	 * 根据一个流生成一个对象
+	 * @param reader
+	 * @author juqkai(juqkai@gmail.com) 2010-10-26
+	 */
+	public static <T> T fromJson(Class<T> type, Reader reader){
+		return new Parser(reader).parse(type);
 	}
 }

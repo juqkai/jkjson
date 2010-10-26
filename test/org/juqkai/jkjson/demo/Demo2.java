@@ -12,6 +12,7 @@ public class Demo2 {
 	String name;
 	List<String> books;
 	Map<String, String> test;
+	Demo3 de3;
 	public Demo2(int id, String name){
 		this.id = id;
 		this.name = name;
@@ -23,10 +24,12 @@ public class Demo2 {
 		test = new HashMap<String, String>();
 		test.put("1", "1");
 		test.put("2", "2");
+		
+		de3 = new Demo3();
 	}
 	public String toJson() {
-		return Strings.format("{id:\"{}\",books:{},test:{},name:\"{}\"}", 
-				id,"[\"one\",\"two\",\"three\"]", "{2:\"2\",1:\"1\"}", name);
+		return Strings.format("{id:\"{}\",de3:{},books:{},test:{},name:\"{}\"}", 
+				id,de3.toJson(),"[\"one\",\"two\",\"three\"]", "{2:\"2\",1:\"1\"}", name);
 	}
 	public String getName() {
 		return name;
@@ -51,5 +54,11 @@ public class Demo2 {
 	}
 	public void setTest(Map<String, String> test) {
 		this.test = test;
+	}
+	public Demo3 getDe3() {
+		return de3;
+	}
+	public void setDe3(Demo3 de3) {
+		this.de3 = de3;
 	}
 }
